@@ -1,0 +1,38 @@
+export default function BarChart() {
+  return (
+    <div className="bg-white border rounded-xl p-5 shadow-sm">
+      <h2 className="text-lg font-semibold text-[#164E63] mb-5">
+        Presentation Scores
+      </h2>
+
+      <div className="flex items-end justify-around h-48">
+
+        <div className="text-center">
+          <div className="bg-[#008B84] w-10 h-32 rounded-t-lg"></div>
+          <p className="text-xs mt-2">AI</p>
+        </div>
+
+        <div className="text-center">
+          <div className="bg-[#2ECC71] w-10 h-28 rounded-t-lg"></div>
+          <p className="text-xs mt-2">Future</p>
+        </div>
+
+        <div className="text-center">
+          <div className="bg-[#1576D2] w-10 h-36 rounded-t-lg"></div>
+          <p className="text-xs mt-2">Climate</p>
+        </div>
+
+        <div className="text-center">
+          <div className="bg-[#008B84] w-10 h-24 rounded-t-lg"></div>
+          <p className="text-xs mt-2">Digital</p>
+        </div>
+
+        <div className="text-center">
+          <div className="bg-[#2ECC71] w-10 h-20 rounded-t-lg"></div>
+          <p className="text-xs mt-2">Project</p>
+        </div>
+
+      </div>
+    </div>
+  );
+}
