@@ -1,0 +1,102 @@
+/* Custom Styles for Presentation Evaluator Module 4 */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #0b0f19;
+  color: #f3f4f6;
+  overflow-x: hidden;
+}
+
+/* Glassmorphism Card Style */
+.glass-card {
+  background: rgba(17, 24, 39, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card-interactive {
+  transition: all 0.25s ease-in-out;
+}
+
+.glass-card-interactive:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 10px 30px -10px rgba(79, 70, 229, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.6);
+}
+
+/* Glowing Animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(139, 92, 246, 0.7);
+  }
+}
+
+.animate-glow {
+  animation: pulse-glow 3s infinite ease-in-out;
+}
+
+/* Circular Progress Smooth Transition */
+.circle-progress {
+  transition: stroke-dashoffset 0.8s ease-in-out;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+/* Radar Chart Styles */
+.radar-grid {
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-dasharray: 4 4;
+}
+
+.radar-area {
+  fill: rgba(99, 102, 241, 0.25);
+  stroke: #6366f1;
+  stroke-width: 2.5;
+  transition: all 0.5s ease-in-out;
+}
+
+.radar-point {
+  fill: #818cf8;
+  stroke: #ffffff;
+  stroke-width: 2;
+  transition: r 0.2s ease;
+}
+
+.radar-point:hover {
+  r: 7;
+  fill: #c084fc;
+}
+
+/* Code Snippet Dark Theme */
+.code-block {
+  font-family: var(--font-mono);
+  background: #090d16;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}

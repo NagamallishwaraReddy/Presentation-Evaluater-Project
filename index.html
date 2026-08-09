@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Presentation Evaluator - Analyze. Improve. Succeed.</title>
+  
+  <!-- Modern Typography (Plus Jakarta Sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              200: '#a7f3d0',
+              300: '#6ee7b7',
+              400: '#34d399',
+              500: '#10b981', // Main emerald green
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+              accent: '#0284c7',
+              navy: '#0f172a',
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          boxShadow: {
+            'soft': '0 4px 25px -4px rgba(0, 0, 0, 0.04), 0 2px 10px -2px rgba(0, 0, 0, 0.02)',
+            'card': '0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 2px 8px -2px rgba(0, 0, 0, 0.02)',
+            'glow': '0 0 25px rgba(16, 185, 129, 0.25)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React 18 & ReactDOM UMD -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <!-- Babel Standalone for React JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- External Base64 Assets -->
+  <script src="src/assets.js"></script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    
+    /* Light mode background styling matching reference image */
+    html.light body {
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    
+    /* Dark mode styling */
+    html.dark body {
+      background-color: #0b0f19;
+      color: #f3f4f6;
+    }
+
+    /* Custom Glass & Soft Card Utilities */
+    .card-light {
+      background: #ffffff;
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      box-shadow: 0 6px 24px -4px rgba(15, 23, 42, 0.04);
+    }
+    
+    .dark .card-light {
+      background: rgba(17, 24, 39, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Gradient Green Accent Buttons */
+    .btn-green-gradient {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+      transition: all 0.2s ease-in-out;
+    }
+    .btn-green-gradient:hover {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+      transform: translateY(-1px);
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .dark ::-webkit-scrollbar-thumb {
+      background: #334155;
+    }
+
+    /* Waveform Animation */
+    @keyframes barPulse {
+      0%, 100% { height: 20%; }
+      50% { height: 95%; }
+    }
+    .animate-bar {
+      animation: barPulse 1.2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-brand-500 selection:text-white">
+  <div id="root"></div>
+
+  <!-- React Application Source Code -->
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    // --- MOCK INITIAL EVALUATIONS DATA ---
+    const INITIAL_EVALUATIONS = [
+      {
+        id: 'eval-1',
+        title: 'Q3 Product Strategy Pitch',
+        date: 'Yesterday',
+        pace: '138 WPM',
+        score: 92,
+        duration: '08:45',
+        fillerCount: 3,
+        fillerRate: '0.6%',
+        clarityScore: '95%',
+        confidenceScore: '94%',
+        tier: 'Top 5% speaker tier',
+        status: 'Optimal Pace',
+        transcript: [
+          { time: '00:05', text: 'Good morning everyone. Today I am excited to present our Q3 product strategy.', filler: false },
+          { time: '00:14', text: 'Our key focus areas include customer retention and AI-driven workflow tools.', filler: false },
+          { time: '00:28', text: 'Now, um, moving on to our primary user acquisition channels...', filler: true, word: 'um' },
+          { time: '00:45', text: 'We observed a 24% increase in organic signups following the v2.4 release.', filler: false },
+          { time: '01:10', text: 'Like, our product adoption metrics indicate strong product-market fit.', filler: true, word: 'like' },
+          { time: '01:35', text: 'To wrap up, our roadmap for next quarter prioritizes speed, security, and scalability.', filler: false }
+        ],
+        strengths: [
+          'Excellent articulation and cadence maintaining optimal 135–140 WPM.',
+          'Very low filler word usage across the entire 8-minute presentation.',
+          'Strong vocal energy during the vision and ROI sections.'
+        ],
+        improvements: [
+          'Brief pause recommended between slides 4 and 5 to let key data digest.',
+          'Slight speed increase detected during Q&A transition section.'
+        ]
+      },
+      {
+        id: 'eval-2',
+        title: 'AI Pitch Deck Keynote',
+        date: '3 days ago',
+        pace: '132 WPM',
+        score: 87,
+        duration: '14:20',
+        fillerCount: 7,
+        fillerRate: '0.9%',
+        clarityScore: '91%',
+        confidenceScore: '89%',
+        tier: 'Top 10% speaker tier',
+        status: 'Great Delivery',
+        transcript: [
+          { time: '00:10', text: 'Welcome investors and partners to our annual keynote.', filler: false },
+          { time: '00:30', text: 'Artificial intelligence is reshaping how organizations analyze video and voice.', filler: false },
+          { time: '01:05', text: 'You know, our technology automates feedback in real time.', filler: true, word: 'you know' },
+          { time: '01:40', text: 'We have secured 12 enterprise pilot contracts this quarter alone.', filler: false }
+        ],
+        strengths: [
+          'Compelling opening hook with clear tone modulation.',
+          'Ideal slide pacing and clear enunciation.'
+        ],
+        improvements: [
+          'Reduce use of phrase "you know" during market sizing explanation.'
+        ]
+      },
+      {
+        id: 'eval-3',
+        title: 'Executive Board Q4 Overview',
+        date: '1 week ago',
+        pace: '141 WPM',
+        score: 95,
+        duration: '11:15',
+        fillerCount: 2,
+        fillerRate: '0.4%',
+        clarityScore: '98%',
+        confidenceScore: '96%',
+        tier: 'Top 2% speaker tier',
+        status: 'Exceptional',
+        transcript: [
+          { time: '00:08', text: 'Members of the board, I will walk you through our Q4 performance highlights.', filler: false },
+          { time: '00:45', text: 'Revenue grew 32% year-over-year while operational expenses decreased by 8%.', filler: false }
+        ],
+        strengths: [
+          'Flawless executive delivery with authoritative pace.',
+          'Minimal filler word count and exceptional clarity.'
+        ],
+        improvements: [
+          'Slightly expand closing conclusion summary.'
+        ]
+      },
+      {
+        id: 'eval-4',
+        title: 'Engineering All-Hands Presentation',
+        date: '2 weeks ago',
+        pace: '126 WPM',
+        score: 84,
+        duration: '18:50',
+        fillerCount: 11,
+        fillerRate: '1.2%',
+        clarityScore: '88%',
+        confidenceScore: '86%',
+        tier: 'Strong Presenter',
+        status: 'Pacing Fine',
+        transcript: [
+          { time: '00:15', text: 'Hey team, welcome to the engineering townhall.', filler: false }
+        ],
+        strengths: [
+          'Engaging conversational tone and approachable demeanor.'
+        ],
+        improvements: [
+          'Pacing was slightly relaxed; aim for 130–140 WPM for technical topics.'
+        ]
+      }
+    ];
+
+    // --- MAIN APPLICATION COMPONENT ---
+    function PresentationEvaluatorApp() {
+      const [darkMode, setDarkMode] = useState(false);
+      const [evaluations, setEvaluations] = useState(INITIAL_EVALUATIONS);
+      const [selectedEval, setSelectedEval] = useState(null);
+      const [showUploadModal, setShowUploadModal] = useState(false);
+      const [searchTerm, setSearchTerm] = useState('');
+
+      // Toggle Theme
+      const toggleTheme = () => {
+        setDarkMode(!darkMode);
+      };
+
+      useEffect(() => {
+        if (darkMode) {
+          document.documentElement.classList.add('dark');
+          document.documentElement.classList.remove('light');
+        } else {
+          document.documentElement.classList.add('light');
+          document.documentElement.classList.remove('dark');
+        }
+      }, [darkMode]);
+
+      // Filtered Evaluations List
+      const filteredEvaluations = useMemo(() => {
+        return evaluations.filter(item => 
+          item.title.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }, [evaluations, searchTerm]);
+
+      // Handle New Upload Completion
+      const handleUploadComplete = (newEval) => {
+        setEvaluations([newEval, ...evaluations]);
+        setShowUploadModal(false);
+        setSelectedEval(newEval); // Open the report immediately for the new upload!
+      };
+
+      return (
+        <div className="min-h-screen pb-16 transition-colors duration-300">
+          
+          {/* HEADER BAR */}
+          <header className="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 transition-colors">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+              
+              {/* LOGO AREA (Exact matching user logo icon and branding) */}
+              <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setSelectedEval(null)}>
+                <div className="relative flex items-center">
+                  <img 
+                    src={window.LOGO_ICON_B64 || './logo-icon-transparent.png'} 
+                    alt="Presentation Evaluator Logo Icon" 
+                    className="h-12 w-auto object-contain transition-transform hover:scale-105"
+                    onError={(e) => {
+                      // Fallback if image fails
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                  {/* SVG Fallback Emblem */}
+                  <div className="hidden h-10 w-10 rounded-xl bg-gradient-to-tr from-teal-500 via-emerald-500 to-blue-600 items-center justify-center text-white font-bold text-xl shadow-md shadow-emerald-500/20">
+                    <i className="fa-solid fa-chart-line"></i>
+                  </div>
+                </div>
+
+                <div className="flex flex-col justify-center">
+                  <h1 className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight uppercase font-sans">
+                    PRESENTATION <span className="text-slate-800 dark:text-slate-200">EVALUATOR</span>
+                  </h1>
+                  <div className="h-[1.5px] bg-slate-300 dark:bg-slate-700 w-full my-[2px]"></div>
+                  <span className="text-[9.5px] font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase">
+                    ANALYZE. IMPROVE. SUCCEED.
+                  </span>
+                </div>
+              </div>
+
+              {/* RIGHT CONTROLS */}
+              <div className="flex items-center space-x-3 sm:space-x-4">
+                
+                {/* Theme Toggle Pill */}
+                <button
+                  onClick={toggleTheme}
+                  className="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-amber-100/80 dark:bg-slate-800 text-amber-900 dark:text-amber-300 hover:bg-amber-200/80 dark:hover:bg-slate-700 text-xs font-semibold transition-all border border-amber-200/60 dark:border-slate-700"
+                  title="Toggle Light / Dark Theme"
+                >
+                  <i className={`fa-solid ${darkMode ? 'fa-moon text-indigo-400' : 'fa-sun text-amber-500'}`}></i>
+                  <span className="capitalize">{darkMode ? 'Dark' : 'Light'}</span>
+                </button>
+
+                {/* New Evaluation Green Button */}
+                <button
+                  onClick={() => setShowUploadModal(true)}
+                  className="btn-green-gradient flex items-center space-x-2 px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm tracking-wide"
+                >
+                  <i className="fa-solid fa-plus text-xs"></i>
+                  <span>New Evaluation</span>
+                </button>
+
+                {/* Profile Pill */}
+                <div className="hidden sm:flex items-center space-x-2 pl-2 border-l border-slate-200 dark:border-slate-800">
+                  <img
+                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80"
+                    alt="John Doe Profile"
+                    className="w-8 h-8 rounded-full object-cover ring-2 ring-emerald-500/30"
+                  />
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">John Doe</span>
+                </div>
+
+                {/* Logout Icon */}
+                <button 
+                  className="p-2 text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors"
+                  title="Logout"
+                >
+                  <i className="fa-solid fa-right-from-bracket text-sm"></i>
+                </button>
+
+              </div>
+            </div>
+          </header>
+
+          {/* MAIN CONTAINER */}
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-6">
+            
+            {/* WELCOME / HERO BANNER CARD */}
+            <div className="card-light rounded-3xl p-6 sm:p-8 relative overflow-hidden transition-all">
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                
+                <div className="space-y-3 max-w-2xl">
+                  {/* AI Status Badge Pill */}
+                  <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 text-xs font-bold">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                    <i className="fa-solid fa-bolt text-[11px]"></i>
+                    <span>AI Speech Evaluation Engine Active</span>
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                    Welcome back, John Doe!
+                  </h2>
+
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Your speech delivery score improved by <span className="font-bold text-emerald-600 dark:text-emerald-400">+8.4%</span> this month. Upload a new recording or review past presentations.
+                  </p>
+                </div>
+
+                {/* Upload Button */}
+                <div className="flex-shrink-0">
+                  <button
+                    onClick={() => setShowUploadModal(true)}
+                    className="btn-green-gradient w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-6 py-3.5 rounded-2xl font-bold text-sm shadow-lg shadow-emerald-500/20"
+                  >
+                    <i className="fa-solid fa-upload text-sm"></i>
+                    <span>Upload Presentation (.mp4 / .wav)</span>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+            {/* METRICS KPI GRID (4 Cards matching the user's reference) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              
+              {/* Card 1: Overall Score */}
+              <div className="card-light rounded-2xl p-5 hover:shadow-lg transition-all duration-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Overall Score</span>
+                  <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm">
+                    <i className="fa-solid fa-chart-line"></i>
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
+                    92%
+                  </div>
+                  <div className="mt-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center space-x-1">
+                    <i className="fa-solid fa-arrow-up text-[10px]"></i>
+                    <span>Top 5% speaker tier</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 2: Average Cadence */}
+              <div className="card-light rounded-2xl p-5 hover:shadow-lg transition-all duration-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Average Cadence</span>
+                  <div className="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-950/80 text-sky-600 dark:text-sky-400 flex items-center justify-center text-sm">
+                    <i className="fa-solid fa-microphone"></i>
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                    135 <span className="text-sm font-bold text-slate-500">WPM</span>
+                  </div>
+                  <div className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+                    Optimal keynote pace (125–150)
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3: Filler Word Rate */}
+              <div className="card-light rounded-2xl p-5 hover:shadow-lg transition-all duration-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Filler Word Rate</span>
+                  <div className="w-8 h-8 rounded-lg bg-teal-100 dark:bg-teal-950/80 text-teal-600 dark:text-teal-400 flex items-center justify-center text-sm">
+                    <i className="fa-solid fa-circle-check"></i>
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
+                    0.8%
+                  </div>
+                  <div className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+                    Zero "um" / "like" detected
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 4: Rehearsals Evaluated */}
+              <div className="card-light rounded-2xl p-5 hover:shadow-lg transition-all duration-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Rehearsals Evaluated</span>
+                  <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm">
+                    <i className="fa-solid fa-desktop"></i>
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <div className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                    {evaluations.length + 10}
+                  </div>
+                  <div className="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+                    Total 5.4 practice hours
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* RECENT SPEECH EVALUATIONS SECTION (Table matching user screenshot) */}
+            <div className="card-light rounded-3xl p-6 sm:p-8 space-y-6">
+              
+              {/* Header & Filter Controls */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                    Recent Speech Evaluations
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    Detailed AI-generated reports with transcript and delivery breakdowns
+                  </p>
+                </div>
+
+                {/* Search Bar */}
+                <div className="relative w-full md:w-64">
+                  <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                  <input
+                    type="text"
+                    placeholder="Search presentations..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-slate-800 dark:text-slate-200"
+                  />
+                </div>
+              </div>
+
+              {/* Table View */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800">
+                      <th className="py-3 px-4">PRESENTATION TITLE</th>
+                      <th className="py-3 px-4">DATE</th>
+                      <th className="py-3 px-4">PACE</th>
+                      <th className="py-3 px-4">SCORE</th>
+                      <th className="py-3 px-4 text-right">ACTION</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-xs font-medium">
+                    {filteredEvaluations.map((item) => (
+                      <tr 
+                        key={item.id} 
+                        className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors group cursor-pointer"
+                        onClick={() => setSelectedEval(item)}
+                      >
+                        <td className="py-4 px-4 font-bold text-slate-900 dark:text-white flex items-center space-x-3">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs flex-shrink-0">
+                            <i className="fa-solid fa-file-video"></i>
+                          </div>
+                          <span>{item.title}</span>
+                        </td>
+                        <td className="py-4 px-4 text-slate-500 dark:text-slate-400">
+                          {item.date}
+                        </td>
+                        <td className="py-4 px-4 font-semibold text-slate-700 dark:text-slate-300">
+                          {item.pace}
+                        </td>
+                        <td className="py-4 px-4 font-bold text-emerald-600 dark:text-emerald-400 text-sm">
+                          {item.score}%
+                        </td>
+                        <td className="py-4 px-4 text-right">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedEval(item);
+                            }}
+                            className="px-4 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition-all shadow-sm group-hover:border-emerald-500/50"
+                          >
+                            View Report
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {filteredEvaluations.length === 0 && (
+                  <div className="py-12 text-center text-slate-400 text-xs">
+                    No speech evaluations found matching "{searchTerm}".
+                  </div>
+                )}
+              </div>
+
+            </div>
+
+          </main>
+
+          {/* REPORT MODAL (Detailed Speech Evaluation Report) */}
+          {selectedEval && (
+            <ReportModal evalData={selectedEval} onClose={() => setSelectedEval(null)} />
+          )}
+
+          {/* UPLOAD MODAL */}
+          {showUploadModal && (
+            <UploadModal onClose={() => setShowUploadModal(false)} onComplete={handleUploadComplete} />
+          )}
+
+        </div>
+      );
+    }
+
+    // --- UPLOAD MODAL COMPONENT ---
+    function UploadModal({ onClose, onComplete }) {
+      const [isAnalyzing, setIsAnalyzing] = useState(false);
+      const [progress, setProgress] = useState(0);
+      const [stepText, setStepText] = useState('');
+      const [selectedFile, setSelectedFile] = useState(null);
+      const [titleInput, setTitleInput] = useState('');
+
+      const handleFileSelect = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          setSelectedFile(file);
+          setTitleInput(file.name.replace(/\.[^/.]+$/, ""));
+        }
+      };
+
+      const startAnalysis = () => {
+        if (!selectedFile && !titleInput) return;
+
+        setIsAnalyzing(true);
+        setProgress(15);
+        setStepText('Extracting audio stream from presentation recording...');
+
+        setTimeout(() => {
+          setProgress(45);
+          setStepText('Running Whisper AI neural speech transcription...');
+        }, 1200);
+
+        setTimeout(() => {
+          setProgress(75);
+          setStepText('Calculating WPM cadence & detecting filler word frequency...');
+        }, 2400);
+
+        setTimeout(() => {
+          setProgress(100);
+          setStepText('Generating evaluation report & score matrix...');
+        }, 3600);
+
+        setTimeout(() => {
+          const newReport = {
+            id: 'eval-' + Date.now(),
+            title: titleInput || 'New Presentation Evaluation',
+            date: 'Just now',
+            pace: '136 WPM',
+            score: 91,
+            duration: '06:30',
+            fillerCount: 4,
+            fillerRate: '0.7%',
+            clarityScore: '94%',
+            confidenceScore: '92%',
+            tier: 'Top 5% speaker tier',
+            status: 'Optimal Pace',
+            transcript: [
+              { time: '00:04', text: 'Welcome team. Today I want to walk through our project roadmap.', filler: false },
+              { time: '00:18', text: 'Um, we have achieved major milestones in our latest deployment.', filler: true, word: 'um' },
+              { time: '00:40', text: 'Our customer feedback scores show a significant positive trend.', filler: false }
+            ],
+            strengths: [
+              'Clear and articulate pronunciation of key technical terms.',
+              'Great vocal pacing staying consistently within 130–140 WPM range.'
+            ],
+            improvements: [
+              'Minor filler word detected during transition to slide 2.'
+            ]
+          };
+          onComplete(newReport);
+        }, 4200);
+      };
+
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
+          <div className="card-light rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl relative">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg">
+                  <i className="fa-solid fa-cloud-arrow-up"></i>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                    Upload Speech Recording
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Supports .mp4, .mov, .wav, .mp3 files up to 500MB
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={onClose}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            {!isAnalyzing ? (
+              <div className="space-y-4">
+                
+                {/* File Dropzone */}
+                <div className="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-8 text-center bg-slate-50/50 dark:bg-slate-800/30 hover:border-emerald-500 transition-colors relative cursor-pointer">
+                  <input
+                    type="file"
+                    accept="audio/*,video/*"
+                    onChange={handleFileSelect}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <div className="space-y-2">
+                    <div className="w-12 h-12 mx-auto rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl">
+                      <i className="fa-solid fa-file-audio"></i>
+                    </div>
+                    <p className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                      {selectedFile ? selectedFile.name : 'Drag & drop video or audio file here'}
+                    </p>
+                    <p className="text-[11px] text-slate-400">
+                      {selectedFile ? `${(selectedFile.size / (1024*1024)).toFixed(1)} MB` : 'or click to browse from device'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Title Input */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Presentation Title
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Q4 Executive Keynote Pitch"
+                    value={titleInput}
+                    onChange={(e) => setTitleInput(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-emerald-500 text-slate-800 dark:text-slate-200"
+                  />
+                </div>
+
+                {/* Actions */}
+                <div className="pt-2 flex justify-end space-x-3">
+                  <button
+                    onClick={onClose}
+                    className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={startAnalysis}
+                    disabled={!selectedFile && !titleInput}
+                    className="btn-green-gradient px-6 py-2.5 rounded-xl text-xs font-bold disabled:opacity-50"
+                  >
+                    Start AI Evaluation
+                  </button>
+                </div>
+
+              </div>
+            ) : (
+              /* Simulated AI Analysis Screen */
+              <div className="py-8 text-center space-y-6">
+                
+                {/* Animated Waveform */}
+                <div className="flex items-center justify-center space-x-1.5 h-16">
+                  {[40, 75, 100, 60, 90, 45, 80, 50, 95, 30].map((h, i) => (
+                    <div
+                      key={i}
+                      className="w-1.5 bg-emerald-500 rounded-full animate-bar"
+                      style={{ height: `${h}%`, animationDelay: `${i * 0.1}s` }}
+                    ></div>
+                  ))}
+                </div>
+
+                <div className="space-y-2">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                    Evaluating Speech & Delivery...
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                    {stepText}
+                  </p>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-gradient-to-r from-teal-500 to-emerald-500 h-full transition-all duration-500 rounded-full"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+
+                <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                  {progress}% Complete
+                </p>
+
+              </div>
+            )}
+
+          </div>
+        </div>
+      );
+    }
+
+    // --- REPORT MODAL COMPONENT (Detailed View) ---
+    function ReportModal({ evalData, onClose }) {
+      const [isPlaying, setIsPlaying] = useState(false);
+      const [activeTab, setActiveTab] = useState('overview');
+
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-md animate-fadeIn">
+          <div className="card-light rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl relative">
+            
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-5 gap-4">
+              <div>
+                <div className="flex items-center space-x-3">
+                  <span className="px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-xs font-bold">
+                    Score: {evalData.score}% ({evalData.tier})
+                  </span>
+                  <span className="text-xs text-slate-400 font-semibold">{evalData.date}</span>
+                </div>
+                <h2 className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+                  {evalData.title}
+                </h2>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => alert("Downloading PDF Evaluation Report...")}
+                  className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold flex items-center space-x-2"
+                >
+                  <i className="fa-solid fa-file-pdf text-rose-500"></i>
+                  <span>Export PDF</span>
+                </button>
+                <button 
+                  onClick={onClose}
+                  className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+            </div>
+
+            {/* AUDIO PLAYER & WAVEFORM SIMULATOR */}
+            <div className="bg-slate-900 text-white rounded-2xl p-5 space-y-4 shadow-xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={() => setIsPlaying(!isPlaying)}
+                    className="w-10 h-10 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 flex items-center justify-center text-sm transition-transform active:scale-95"
+                  >
+                    <i className={`fa-solid ${isPlaying ? 'fa-pause' : 'fa-play ml-0.5'}`}></i>
+                  </button>
+                  <div>
+                    <p className="text-xs font-bold text-slate-200">Presentation Audio Stream</p>
+                    <p className="text-[10px] text-slate-400 font-mono">01:15 / {evalData.duration}</p>
+                  </div>
+                </div>
+
+                <div className="text-xs font-mono font-bold text-emerald-400">
+                  {isPlaying ? '▶ Playing Audio' : '⏸ Paused'}
+                </div>
+              </div>
+
+              {/* Waveform Visualization */}
+              <div className="flex items-center space-x-1 h-12 px-2 bg-slate-950/80 rounded-xl">
+                {Array.from({ length: 45 }).map((_, idx) => {
+                  const isFillerMark = idx === 12 || idx === 28;
+                  const height = isFillerMark ? 90 : ((idx * 7) % 65) + 20;
+                  return (
+                    <div
+                      key={idx}
+                      className={`flex-1 rounded-full transition-all ${
+                        isFillerMark 
+                          ? 'bg-rose-500' 
+                          : idx < 18 
+                          ? 'bg-emerald-400' 
+                          : 'bg-slate-700'
+                      }`}
+                      style={{ height: `${height}%` }}
+                      title={isFillerMark ? 'Filler Word Detected' : 'Audio Waveform'}
+                    ></div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* DETAIL METRIC CARDS */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60">
+                <span className="text-[11px] font-bold text-slate-400">Pace / Cadence</span>
+                <p className="text-lg font-black text-slate-900 dark:text-white mt-1">{evalData.pace}</p>
+                <span className="text-[10px] text-emerald-600 font-semibold">Optimal Range</span>
+              </div>
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60">
+                <span className="text-[11px] font-bold text-slate-400">Filler Word Rate</span>
+                <p className="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-1">{evalData.fillerRate}</p>
+                <span className="text-[10px] text-slate-500 font-medium">{evalData.fillerCount} filler words</span>
+              </div>
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60">
+                <span className="text-[11px] font-bold text-slate-400">Clarity & Articulation</span>
+                <p className="text-lg font-black text-slate-900 dark:text-white mt-1">{evalData.clarityScore}</p>
+                <span className="text-[10px] text-emerald-600 font-semibold">Very Clear</span>
+              </div>
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60">
+                <span className="text-[11px] font-bold text-slate-400">Confidence Score</span>
+                <p className="text-lg font-black text-slate-900 dark:text-white mt-1">{evalData.confidenceScore}</p>
+                <span className="text-[10px] text-emerald-600 font-semibold">Strong Modulation</span>
+              </div>
+            </div>
+
+            {/* TRANSCRIPT & AI FEEDBACK TABS */}
+            <div className="space-y-4">
+              <div className="flex border-b border-slate-200 dark:border-slate-800 space-x-6 text-xs font-bold">
+                <button
+                  onClick={() => setActiveTab('overview')}
+                  className={`pb-3 transition-colors ${activeTab === 'overview' ? 'border-b-2 border-emerald-500 text-emerald-600 dark:text-emerald-400' : 'text-slate-400 hover:text-slate-600'}`}
+                >
+                  AI Feedback & Key Insights
+                </button>
+                <button
+                  onClick={() => setActiveTab('transcript')}
+                  className={`pb-3 transition-colors ${activeTab === 'transcript' ? 'border-b-2 border-emerald-500 text-emerald-600 dark:text-emerald-400' : 'text-slate-400 hover:text-slate-600'}`}
+                >
+                  Annotated Speech Transcript
+                </button>
+              </div>
+
+              {activeTab === 'overview' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                  
+                  {/* Strengths */}
+                  <div className="space-y-3 p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/50 dark:border-emerald-800/50">
+                    <h4 className="text-xs font-extrabold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 flex items-center space-x-2">
+                      <i className="fa-solid fa-circle-check text-emerald-500"></i>
+                      <span>Key Delivery Strengths</span>
+                    </h4>
+                    <ul className="space-y-2">
+                      {evalData.strengths.map((st, i) => (
+                        <li key={i} className="text-xs text-slate-700 dark:text-slate-300 flex items-start space-x-2">
+                          <span className="text-emerald-500 font-bold">•</span>
+                          <span>{st}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Areas for Improvement */}
+                  <div className="space-y-3 p-4 rounded-2xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/50 dark:border-amber-800/50">
+                    <h4 className="text-xs font-extrabold uppercase tracking-wider text-amber-800 dark:text-amber-300 flex items-center space-x-2">
+                      <i className="fa-solid fa-triangle-exclamation text-amber-500"></i>
+                      <span>Recommended Improvements</span>
+                    </h4>
+                    <ul className="space-y-2">
+                      {evalData.improvements.map((imp, i) => (
+                        <li key={i} className="text-xs text-slate-700 dark:text-slate-300 flex items-start space-x-2">
+                          <span className="text-amber-500 font-bold">•</span>
+                          <span>{imp}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                </div>
+              ) : (
+                /* Transcript List */
+                <div className="space-y-3 pt-2 max-h-60 overflow-y-auto pr-2">
+                  {evalData.transcript.map((line, idx) => (
+                    <div key={idx} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 text-xs flex items-start space-x-3">
+                      <span className="font-mono text-slate-400 font-semibold">{line.time}</span>
+                      <p className="text-slate-800 dark:text-slate-200 flex-1 leading-relaxed">
+                        {line.text}
+                      </p>
+                      {line.filler && (
+                        <span className="px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 text-[10px] font-bold">
+                          Filler: "{line.word}"
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+            </div>
+
+          </div>
+        </div>
+      );
+    }
+
+    // --- RENDER REACT APP ---
+    ReactDOM.createRoot(document.getElementById('root')).render(<PresentationEvaluatorApp />);
+  </script>
+</body>
+</html>
