@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", Arial, sans-serif;
+  color: #172033;
+  background: #fafcfb;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+button, input {
+  font: inherit;
+}
+
+button { cursor: pointer; }
+
+.panel {
+  @apply rounded-[11px] border border-[#edf0f1] bg-white shadow-panel;
+}
