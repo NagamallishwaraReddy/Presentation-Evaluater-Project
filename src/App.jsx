@@ -28,6 +28,96 @@ import Home from "./pages/Home";
 import RecentPresentations from "./pages/RecentPresentations";
 import Settings from "./pages/Settings";
 
+/* Upload module */
+import UploadBox from "./components/UploadBox";
+import UploadGuidelines from "./components/UploadGuidelines";
+import SelectedFile from "./components/SelectedFile";
+import AcceptedFileTypes from "./components/AcceptedFileTypes";
+
+import { AlertCircle } from "lucide-react";
+import { useState } from "react";
+
+/* =========================================================
+   UPLOAD PRESENTATION PAGE
+   ========================================================= */
+
+function UploadPresentation() {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+
+  const handleFileSelected = (file) => {
+    setSelectedFile(file);
+    setErrorMessage("");
+    setUploadSuccess(false);
+  };
+
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    setUploadSuccess(false);
+    setErrorMessage("");
+  };
+
+  const handleUploadFile = () => {
+    if (!selectedFile || isUploading) return;
+
+    setIsUploading(true);
+    setUploadSuccess(false);
+
+    // Temporary mock upload.
+    // Replace this later with your Spring Boot API call.
+    setTimeout(() => {
+      setIsUploading(false);
+      setUploadSuccess(true);
+    }, 1800);
+  };
+
+  return (
+    <div className="page">
+      <main className="main-content">
+
+        <div className="page-heading">
+          <h1>Upload Presentation</h1>
+
+          <p>
+            Upload your presentation file (PPT, PDF) or video (MP4)
+            for evaluation
+          </p>
+        </div>
+
+        {errorMessage && (
+          <div className="error-banner">
+            <AlertCircle size={16} />
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
+        <div className="upload-section">
+
+          <UploadBox
+            onFileSelected={handleFileSelected}
+            onError={setErrorMessage}
+          />
+
+          <UploadGuidelines />
+
+        </div>
+
+        <SelectedFile
+          file={selectedFile}
+          onRemove={handleRemoveFile}
+          onUpload={handleUploadFile}
+          isUploading={isUploading}
+          uploadSuccess={uploadSuccess}
+        />
+
+        <AcceptedFileTypes />
+
+      </main>
+    </div>
+  );
+}
 
 /* =========================================================
    AUTHENTICATION / LANDING PAGE ROUTES
@@ -49,7 +139,6 @@ function LandingPageRoute() {
   );
 }
 
-
 function LoginRoute() {
   const navigate = useNavigate();
 
@@ -66,7 +155,6 @@ function LoginRoute() {
     </AuthLayout>
   );
 }
-
 
 function SignupRoute() {
   const navigate = useNavigate();
@@ -85,7 +173,6 @@ function SignupRoute() {
   );
 }
 
-
 function ForgotPasswordRoute() {
   const navigate = useNavigate();
 
@@ -103,7 +190,6 @@ function ForgotPasswordRoute() {
   );
 }
 
-
 function ProfileRoute() {
   const navigate = useNavigate();
 
@@ -118,7 +204,6 @@ function ProfileRoute() {
   );
 }
 
-
 function DashboardRoute() {
   const navigate = useNavigate();
 
@@ -132,7 +217,6 @@ function DashboardRoute() {
     </ProtectedRoute>
   );
 }
-
 
 /* =========================================================
    MAIN APPLICATION
@@ -210,6 +294,12 @@ function App() {
               <Route
                 path="/settings"
                 element={<Settings />}
+              />
+
+              {/* Upload Presentation */}
+              <Route
+                path="/upload"
+                element={<UploadPresentation />}
               />
 
             </Route>
