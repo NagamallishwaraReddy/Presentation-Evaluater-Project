@@ -1,16 +1,54 @@
-# React + Vite
+# Presentation Evaluator — Dashboard Module
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+This module implements Member 2 responsibilities using:
 
-Currently, two official plugins are available:
+- React
+- React Router
+- Context API
+- Tailwind CSS
+- Lucide React icons
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Included pages
 
-## React Compiler
+- `/dashboard` — Dashboard Home
+- `/home` — Home / Upload screen
+- `/recent-presentations` — Recent Presentations
+- `/settings` — Settings
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Included features
 
-## Expanding the Oxlint configuration
+- Sidebar
+- Navbar
+- Search
+- Welcome screen
+- Results overview
+- Score cards
+- Recent presentations
+- Quick actions
+- Routing
+- Shared state through Context API
+- Upload flow
+- Settings
+- Responsive layout
+- Theme matching the supplied screenshot
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Install and run
+
+```bash
+npm install
+npm run dev
+```
+
+Open the URL Vite prints, normally:
+
+http://localhost:5173
+
+## Important
+
+If you already have an existing React project, copy the `src` files, `public/logo.png`, and Tailwind/Vite configuration into that project instead of creating a second project.
+
+
+## Sidebar logo
+
+The sidebar now uses `public/presentation-logo.jpg`, cropped from the supplied
+Presentation Evaluator logo so it matches the target screenshot more closely.
